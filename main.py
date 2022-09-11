@@ -1,16 +1,23 @@
-# This is a sample Python script.
+"""Точка входа"""
+from loader import dp
+from aiogram import executor
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
-
-
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+import handlers
+from utils.notify_admins import on_startup_notify
+from utils.set_bot_commands import set_default_commands
 
 
-# Press the green button in the gutter to run the script.
+async def on_startup(dispatcher):
+    """
+    Запуск стартовых функции бота
+    Args:
+        dispatcher:Диспетчер
+
+    Returns:
+    """
+    await on_startup_notify(dispatcher)
+    await set_default_commands(dispatcher)
+
+
 if __name__ == '__main__':
-    print_hi('PyCharm')
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+    executor.start_polling(dp, on_startup=on_startup)
