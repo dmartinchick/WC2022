@@ -1,23 +1,31 @@
 """Точка входа"""
-from loader import dp
-from aiogram import executor
+import logging
 
-import handlers
-from utils.notify_admins import on_startup_notify
-from utils.set_bot_commands import set_default_commands
+from aiogram import Bot, Dispatcher, executor
+from aiogram.contrib.fsm_storage.memory import MemoryStorage
+from data.config import load_config
+from handlers.user.main_comands import register_main_comands
+from handlers.user.main_menu import register_main_menu
+from handlers.echo import register_echo
 
 
-async def on_startup(dispatcher):
-    """
-    Запуск стартовых функции бота
-    Args:
-        dispatcher:Диспетчер
+def main():
+    logging.basicConfig(
+        level=logging.INFO,
+        format=u'%(filename)s:%(lineno)d #%(levelname)-4s [%(asctime)s] - %(name)s - %(message)s',
+        )
 
-    Returns:
-    """
-    await on_startup_notify(dispatcher)
-    await set_default_commands(dispatcher)
+    config = load_config('.env')
+    bot = Bot(token=config.tg_bot.token)
+    storage = MemoryStorage()
+    dp = Dispatcher(bot, storage=storage)
+
+    register_main_comands(dp)
+    register_main_menu(dp)
+    register_echo(dp)
+
+    executor.start_polling(dp)
 
 
 if __name__ == '__main__':
-    executor.start_polling(dp, on_startup=on_startup)
+    main()
