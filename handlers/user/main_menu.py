@@ -1,14 +1,23 @@
 from aiogram import Dispatcher
-from aiogram.types import Message
+from aiogram.types import Message, CallbackQuery
+from keyboards.inline_keyboard import MainMenuKeyboard
 
-from keyboards.default.main_menu import main_menu_button
 
+async def start_main_menu(message: Message | CallbackQuery):
 
-async def start_main_menu(message: Message):
-    await message.answer(
-        text="Главное меню",
-        reply_markup=main_menu_button
-    )
+    markup = await MainMenuKeyboard(1).make_keyboard()
+
+    if isinstance(message, Message):
+        await message.answer(
+            text='Главное меню',
+            reply_markup=markup
+        )
+    elif isinstance(message, CallbackQuery):
+        call = message
+        await call.message.answer(
+            text='Главное меню',
+            reply_markup=markup
+        )
 
 
 def register_main_menu(dp: Dispatcher):
