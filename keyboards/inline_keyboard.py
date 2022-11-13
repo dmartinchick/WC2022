@@ -13,26 +13,6 @@ class Category:
     item_name: str
 
 
-class Callback(ABC):
-
-    @abstractmethod
-    def make_callback(self):
-        pass
-
-
-class MainMenuCallback(Callback):
-
-    def __init__(self):
-        self.__callback_data = CallbackData(
-            'mm',
-            'category',
-            'item_id'
-        )
-
-    def make_callback(self, category: str = '0', item_id: int = 0):
-        return self.__callback_data.new(category, item_id)
-
-
 class Keyboard(ABC):
 
     def __init__(self, row_width: int):
@@ -69,6 +49,10 @@ class Keyboard(ABC):
         )
 
     @abstractmethod
+    def make_callback(self):
+        pass
+
+    @abstractmethod
     async def make_keyboard(self) -> InlineKeyboardMarkup:
         pass
 
@@ -77,7 +61,11 @@ class MainMenuKeyboard(Keyboard):
 
     def __init__(self, row_width: int = 3):
         Keyboard.__init__(self, row_width)
-        self.callback = MainMenuCallback()
+        self.callback_data = CallbackData(
+            'main_menu',
+            'category',
+            'item_id'
+        )
         self.categories = [
             Category('Рейтингн прогнозистов', 'betteros_rating'),
             Category('Матчи игрового дня', 'matches_of_the_day'),
@@ -85,22 +73,35 @@ class MainMenuKeyboard(Keyboard):
             Category('Мои прогнозы', 'my_bets')
         ]
 
+    @property
+    def callback_data(self) -> CallbackData:
+        return self.__callback_data
+
+    @callback_data.setter
+    def callback_data(self, callback_data: CallbackData):
+        if not isinstance(callback_data, CallbackData):
+            raise TypeError('callback_data Должен быть CallbcakData')
+        else:
+            self.__callback_data = callback_data
+
+    def make_callback(self, category: str = '0', item_id: int = 0) -> str:
+        return self.__callback_data.new(category, item_id)
+
     async def make_keyboard(self) -> InlineKeyboardMarkup:
         for category in self.categories:
             self.markup.insert(
                 InlineKeyboardButton(
                     text=category.item_text,
-                    callback_data=self.callback.make_callback(category.item_name)
+                    callback_data=self.make_callback(category.item_name)
                 )
             )
-        await self.add_button_back()
         return self.markup
 
 
 @logger.catch
 def main():
-    kb = MainMenuKeyboard(4).make_keyboard()
-    print(kb)
+    kb = MainMenuKeyboard(row_width=1)
+    print(type(kb.make_callback()))
 
 
 if __name__ == '__main__':
@@ -145,4 +146,18 @@ if __name__ == '__main__':
     -Картинка с логотипами матча и информацией о матче-
     [Сделать/изменить прогноз]  [Удалить прогноз]
     [<< В главное меню]
+"""
+
+"""
+    >>> Главное меню
+        [Рейтинг прогнозистов]
+        [Матчи игрового дня]
+        >>> Матчи игрового дня
+            [Матч 1]
+            [Матч 2]
+            [...]
+            [Матч n]
+        [Все матчи]
+        [Мои прогнозы]
+        
 """
