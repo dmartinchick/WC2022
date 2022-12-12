@@ -4,10 +4,16 @@ from environs import Env
 
 
 @dataclass
-class DbConfig:
-    """
-    Класс настроек ДБ
-    """
+class DbMySQLConfig:
+    host: str
+    password: str
+    port: int
+    user: str
+    database: str
+
+
+@dataclass
+class DbPgConfig:
     host: str
     password: str
     port: int
@@ -24,7 +30,7 @@ class TgBot:
 @dataclass
 class Config:
     tg_bot: TgBot
-    # db: DbConfig
+    db: DbPgConfig  # can use MySQLConfig
 
 
 def load_config(path: str = None):
@@ -35,5 +41,12 @@ def load_config(path: str = None):
         tg_bot=TgBot(
             token=env.str("BOT_TOKEN"),
             admin_ids=list(map(int, env.list("ADMINS")))
+        ),
+        db=DbPgConfig(
+            host=env.str("PG_DB_HOST"),
+            password=env.str("PG_DB_PASSWORD"),
+            port=env.int("PG_DB_PORT"),
+            user=env.str("PG_DB_USER"),
+            database=env.str("PG_DB_NAME")
         )
     )
